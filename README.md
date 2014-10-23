@@ -1,4 +1,4 @@
 Spirographjs
 ============
 
-JavaScript Spirograph WebGL rendering
+JavaScript Spirograph rendering
