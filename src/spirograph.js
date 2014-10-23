@@ -31,8 +31,8 @@ var Spirograph = function (options) {
 	var canvas = $('<canvas></canvas>').appendTo(spiro.settings.container),
 		ctx = canvas.get(0).getContext('2d');
 
-	canvas.width(spiro.settings.container.width());
-	canvas.height(spiro.settings.container.height());
+	canvas.attr('width', spiro.settings.container.width());
+	canvas.attr('height', spiro.settings.container.height());
 
 	spiro.circles = [];
 
@@ -98,7 +98,7 @@ var Spirograph = function (options) {
 
 		count++;
 
-		if (count > 100) return;
+		//if (count > 100) return;
 
 		if (spiro.settings.active)
 			requestAnimFrame(animate);
@@ -123,15 +123,18 @@ var Spirograph = function (options) {
 		if (!isFinite(coords.x)) coords.x = 0;
 		if (!isFinite(coords.y)) coords.y = 0;
 
-		ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-		ctx.fillStyle = 'rgba(255,255,255,0.2)';
+		ctx.strokeStyle = 'rgba(255,255,255,0.01)';
+		ctx.fillStyle = 'rgba(255,255,255,0.5)';
 		ctx.lineWidth = 1;
 
 		coords.x += circle.center.x;
 		coords.y += circle.center.y;
 
+		ctx.beginPath();
 		ctx.moveTo(circle.center.x, circle.center.y);
 		ctx.lineTo(coords.x, coords.y);
+		ctx.closePath();
+		ctx.stroke();
 
 		drawCircle(coords.x, coords.y, 2);
 
@@ -145,8 +148,6 @@ var Spirograph = function (options) {
 
 		circle = spiro.circles[index][iteration];
 		circle.center = coords;
-
-		debugger;
 
 		drawSpiro(index, iteration);
 	}
@@ -163,7 +164,9 @@ var Spirograph = function (options) {
 		ctx.beginPath();
 		ctx.arc(x, y, rad, 0, Math.PI * 2, true);
 		ctx.closePath();
-		ctx.stroke();
+		ctx.fill();
+
+		console.log("Drawing circle at: ", x, y, rad);
 	}
 
 	// shim layer with setTimeout fallback
