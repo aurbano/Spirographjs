@@ -27,23 +27,17 @@ var Spirograph = function (options) {
 
 	spiro.settings = $.extend(spiro.settings, options);
 
-	// Setup pixi
-	// create an new instance of a pixi stage
-	var stage = new PIXI.Stage(spiro.settings.bgColor),
-		renderer = PIXI.autoDetectRenderer(spiro.settings.container.width(), spiro.settings.container.height(), null, false, true),
-		blurFilter = new PIXI.BlurFilter();
+	// Setup canvas
+	var canvas = $('<canvas></canvas>').appendTo(spiro.settings.container),
+		ctx = canvas.get(0).getContext('2d');
 
-	blurFilter.blur = 0;
-
-	//stage.cacheAsBitmap = true;
+	canvas.width(spiro.settings.container.width());
+	canvas.height(spiro.settings.container.height());
 
 	spiro.circles = [];
 
 	// Set up the circles' data
 	setup();
-
-	// add the renderer view element to the DOM
-	spiro.settings.container.append(renderer.view);
 
 	/**
 	 * Start the animation
@@ -76,10 +70,6 @@ var Spirograph = function (options) {
 		var circles = [];
 
 		for (var i = 0; i < spiro.settings.circles; i++) {
-			var graphics = new PIXI.Graphics();
-			graphics.blendMode = PIXI.blendModes[spiro.settings.blendMode];
-			stage.addChild(graphics);
-
 			circles.push({
 				rad: Math.floor(Math.random() * spiro.settings.maxRad) + spiro.settings.minRad,
 				pos: 0,
@@ -87,8 +77,7 @@ var Spirograph = function (options) {
 					x: x,
 					y: y
 				},
-				increment: 2 * Math.PI / ((Math.random() * spiro.settings.maxIncrements + spiro.settings.maxIncrements) * (i + 1)),
-				graphics: graphics
+				increment: 2 * Math.PI / ((Math.random() * spiro.settings.maxIncrements + spiro.settings.maxIncrements) * (i + 1))
 			});
 		}
 
@@ -104,19 +93,12 @@ var Spirograph = function (options) {
 
 		// Draw the main circle
 		for (var i = 0; i < spiro.circles.length; i++) {
-			drawCircle(i, 0);
+			drawSpiro(i, 0);
 		}
-
-
-
-		renderer.render(stage);
-
-		//stage.updateCache();
 
 		count++;
 
-		//if (count > 100) return;
-
+		if (count > 100) return;
 
 		if (spiro.settings.active)
 			requestAnimFrame(animate);
@@ -128,11 +110,9 @@ var Spirograph = function (options) {
 	 *
 	 * @param  {Object} circle 	 Circle object, must contain center{x,y}, graphics (Pixijs Graphics), rad (int) and pos (Position along the circumference in radians).
 	 */
-	function drawCircle(index, iteration) {
+	function drawSpiro(index, iteration) {
 
 		var circle = spiro.circles[index][iteration];
-
-		//circle.graphics.clear();
 
 		// Calculate end coordinates
 		var coords = {
@@ -143,16 +123,17 @@ var Spirograph = function (options) {
 		if (!isFinite(coords.x)) coords.x = 0;
 		if (!isFinite(coords.y)) coords.y = 0;
 
-		circle.graphics.lineStyle(1, 0xffffff, 0.4);
-		circle.graphics.beginFill(0xffffff, 0.7);
+		ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+		ctx.fillStyle = 'rgba(255,255,255,0.2)';
+		ctx.lineWidth = 1;
 
 		coords.x += circle.center.x;
 		coords.y += circle.center.y;
 
-		circle.graphics.moveTo(circle.center.x, circle.center.y);
-		circle.graphics.lineTo(coords.x, coords.y);
+		ctx.moveTo(circle.center.x, circle.center.y);
+		ctx.lineTo(coords.x, coords.y);
 
-		circle.graphics.drawCircle(coords.x, coords.y, 2);
+		drawCircle(coords.x, coords.y, 2);
 
 		circle.pos += circle.increment;
 
@@ -165,8 +146,35 @@ var Spirograph = function (options) {
 		circle = spiro.circles[index][iteration];
 		circle.center = coords;
 
-		drawCircle(index, iteration);
+		debugger;
+
+		drawSpiro(index, iteration);
 	}
+
+	/**
+	 * Draw a circle
+	 * @param  {int} 	x     Center x coordinate
+	 * @param  {int} 	y     Center y coordinate
+	 * @param  {int} 	rad   Radius
+	 * @param  {String} color HTML color
+	 * @return {void}
+	 */
+	function drawCircle(x, y, rad) {
+		ctx.beginPath();
+		ctx.arc(x, y, rad, 0, Math.PI * 2, true);
+		ctx.closePath();
+		ctx.stroke();
+	}
+
+	// shim layer with setTimeout fallback
+	window.requestAnimFrame = (function () {
+		return window.requestAnimationFrame ||
+			window.webkitRequestAnimationFrame ||
+			window.mozRequestAnimationFrame ||
+			function (callback) {
+				window.setTimeout(callback, 1000 / 60);
+			};
+	})();
 
 	return spiro;
 };
