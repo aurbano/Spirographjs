@@ -16,12 +16,12 @@ var Spirograph = function (options) {
 		bgColor: 0x000000,
 		circles: 3,
 		active: false,
-		minRad: 20,
+		minRad: 100,
 		maxRad: 200,
 		centerX: null,
 		centerY: null,
 		centerRad: null,
-		minIncrements: 30,
+		minIncrements: 10,
 		maxIncrements: 150
 	};
 
@@ -35,9 +35,6 @@ var Spirograph = function (options) {
 	canvas.attr('height', spiro.settings.container.height());
 
 	spiro.circles = [];
-
-	// Set up the circles' data
-	setup();
 
 	/**
 	 * Start the animation
@@ -77,9 +74,11 @@ var Spirograph = function (options) {
 					x: x,
 					y: y
 				},
-				increment: 2 * Math.PI / ((Math.random() * spiro.settings.maxIncrements + spiro.settings.maxIncrements) * (i + 1))
+				increment: 2 * Math.PI / ((Math.random() * spiro.settings.maxIncrements + spiro.settings.maxIncrements - Math.pow(2, spiro.settings.circles - i)))
 			});
 		}
+
+		console.log("Added ", circles);
 
 		return circles;
 	}
@@ -165,8 +164,6 @@ var Spirograph = function (options) {
 		ctx.arc(x, y, rad, 0, Math.PI * 2, true);
 		ctx.closePath();
 		ctx.fill();
-
-		console.log("Drawing circle at: ", x, y, rad);
 	}
 
 	// shim layer with setTimeout fallback
